@@ -1,0 +1,147 @@
+Answers:
+
+# Query for all documents in the series collection
+db.series.find()
+
+# Query for all documents in the series collection with pretty print
+db.series.find().pretty()
+
+# Get a count of the number of documents in the series collection
+db.series.count()
+
+# Get an array of all the unique values for the key "type" in the series collection
+db.series.distinct("type")
+
+# Get an array of all the unique values for the key "name" in the series collection
+db.series.distinct("name")
+
+# Use the API to find a TV series not already in the collection
+# Insert the new series "Bridgerton" into the series collection
+db.series.insertOne({
+    "id": 42966,
+    "url": "https://www.tvmaze.com/shows/42966/bridgerton",
+    "name": "Bridgerton",
+    "type": "Scripted",
+    "language": "English",
+    "genres": [
+        "Drama",
+        "Romance"
+    ],
+    "status": "Running",
+    "runtime": null,
+    "averageRuntime": 61,
+    "premiered": "2020-12-25",
+    "ended": null,
+    "officialSite": "https://www.netflix.com/title/80232398",
+    "schedule": {
+        "time": "",
+        "days": []
+    },
+    "rating": {
+        "average": 7.2
+    },
+    "weight": 99,
+    "network": null,
+    "webChannel": {
+        "id": 1,
+        "name": "Netflix",
+        "country": null,
+        "officialSite": "https://www.netflix.com/"
+    },
+    "dvdCountry": null,
+    "externals": {
+        "tvrage": null,
+        "thetvdb": 366668,
+        "imdb": "tt8740790"
+    },
+    "image": {
+        "medium": "https://static.tvmaze.com/uploads/images/medium_portrait/504/1262378.jpg",
+        "original": "https://static.tvmaze.com/uploads/images/original_untouched/504/1262378.jpg"
+    },
+    "summary": "<p>Based on Julia Quinn's best-selling series of novels, <b>Bridgerton</b> is set in the sexy, lavish and competitive world of Regency London high society. From the glittering ballrooms of Mayfair to the aristocratic palaces of Park Lane and beyond, the series unveils a seductive, sumptuous world replete with intricate rules and dramatic power struggles, where no one is truly ever on steady ground. At the heart of the show is the powerful Bridgerton family. Comprised of eight close-knit siblings, this funny, witty, daring and clever group must navigate the upper ten thousand's marriage mart in search of romance, adventure and love.</p>",
+    "updated": 1716643677,
+    "_links": {
+        "self": {
+            "href": "https://api.tvmaze.com/shows/42966"
+        },
+        "previousepisode": {
+            "href": "https://api.tvmaze.com/episodes/2711888",
+            "name": "Old Friends"
+        },
+        "nextepisode": {
+            "href": "https://api.tvmaze.com/episodes/2711889",
+            "name": "Tick Tock"
+        }
+    }
+})
+
+# Find all series with status Ended
+db.series.find({status: "Ended"}).pretty()
+
+# Find all series with a runtime less than 45
+db.series.find({runtime: {$lt: 45}}).pretty()
+
+# Find all series with a rating average less than 9.0
+db.series.find({"rating.average": { $lt: 9.0 } }).pretty()
+
+# Find all series in the genre Comedy
+db.series.find({genres: "Comedy" }).pretty()
+
+# Find all series with genres Science-Fiction and Adventure
+db.series.find({genres: { $all: ["Science-Fiction", "Adventure"] } }).pretty()
+
+# Find all series with a rating average greater than 8.5 and genre Crime or Drama
+db.series.find({"rating.average": { $gt: 8.5 }, genres: { $in: ["Crime", "Drama"]}}).pretty()
+
+# Find all series with exactly two genres
+db.series.find({genres: { $size: 2 } }).pretty()
+
+# Return only the name and _id of all series of status Ended
+db.series.find({status: "Ended" }, { name: 1, _id: 1 })
+
+# Return only the name of all series of status Ended
+db.series.find({status: "Ended" }, { name: 1, _id: 0 })
+
+# Return the full documents of all series of the network HBO omitting only the summary and id field
+db.series.find({"network.name": "HBO" }, {summary: 0, id: 0 }).pretty()
+
+# Return the name of each series and the last genre mentioned in its array
+db.series.find({}, { name: 1, lastGenre: { $arrayElemAt: ["$genres", -1] }, _id: 0 })
+
+# Count how many series there are shown on Adult Swim
+db.series.aggregate([{ $match: { "network.name": "Adult Swim" } }, { $count: "totalAdultSwimSeries" }])
+
+# Take the maximum average rating for each genre
+db.series.aggregate([{ $unwind: "$genres" }, { $group: { _id: "$genres", maxAverageRating: { $max: "$rating.average" } } } ])
+
+# Sort all English-language series by average rating (top-rated first) and print only their names
+db.series.aggregate([{ $match: { language: "English" } }, { $sort: { "rating.average": -1 } }, { $project: { name: 1, _id: 0 } } ])
+
+# Create a text index on the summary field
+db.series.createIndex({ summary: "text" })
+
+# Use $text to search for documents in series mentioning "alcoholic grandfather"
+db.series.find({ $text: { $search: "alcoholic grandfather" } }).pretty()
+
+# Drop the text index
+db.series.dropIndex("summary_text")
+
+# Create a text index on the summary field again
+db.series.createIndex({ summary: "text" })
+
+# Try another keyword query search
+db.series.find({ $text: { $search: "space travel" } })
+
+# Drop the text index again
+db.series.dropIndex("summary_text")
+
+
+#####
+does not execute correctly but this would be the command 
+#####
+
+# IN PROGRESS
+
+mongoimport --db tvdb --collection crewBridgerton --file crewBridgerton.json --jsonArray
+
+db.series.find({ "name": "Bridgerton" }, {_id:1})

@@ -1,0 +1,78 @@
+MATCH (n) RETURN count(*);
+
+Return 10 nodes of any type:
+MATCH (n) RETURN n LIMIT 10;
+
+Return 10 Person nodes:
+MATCH (p:Person) RETURN p LIMIT 10;
+
+Return the names of 10 Person nodes:
+MATCH (p:Person) RETURN p.name LIMIT 10;
+
+Return Person nodes with the name "Sebastián Ferrada":
+MATCH (p:Person {name: "Sebastián Ferrada"}) RETURN p;
+
+Return any node with the name "Sebastián Ferrada":
+MATCH (n {name: "Sebastián Ferrada"}) RETURN n;
+
+Return the count of persons with the name "Jorge Pérez":
+MATCH (p:Person {name: "Jorge Pérez"}) RETURN count(p);
+
+Return the person IDs (perId) of persons named "Jorge Pérez" or "Jorge Perez":
+MATCH (p:Person) WHERE p.name = "Jorge Pérez" OR p.name = "Jorge Perez" RETURN p.perId;
+
+Return the count of persons whose name starts with "Alber":
+MATCH (p:Person) WHERE p.name STARTS WITH "Alber" RETURN count(p);
+
+Find the titles of all publications authored by "Claudio Gutiérrez":
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[:authorOf]->(pub:Publication) RETURN pub.title;
+
+Find the titles and year of journal articles authored by "Claudio Guti´errez", along with Claudio’s position
+in the author list, ordered ascending by year and in case of a tie on year, by title, ascending.
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[r:authorOf]->(a:Article)
+RETURN a.title, a.year, r.order AS position
+ORDER BY a.year ASC, a.title ASC;
+
+Find the titles and year of journal articles where "Claudio Gutiérrez" is the first author:
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[:authorOf {order: 1}]->(a:Article) 
+RETURN a.title, a.year;
+
+Find the titles and year of journal articles where "Claudio Gutiérrez" is not the first author:
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[r:authorOf]->(a:Article)
+WHERE r.order > 1
+RETURN a.title, a.year;
+
+Find the unique names of all coauthors of "Claudio Gutiérrez" on journal articles:
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[:authorOf]->(a:Article)<-[:authorOf]-(co:Person)
+RETURN DISTINCT co.name;
+
+Count the unique coauthors of "Claudio Gutiérrez" on journal articles:
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[:authorOf]->(a:Article)<-[:authorOf]-(co:Person)
+RETURN count(DISTINCT co);
+
+Count the unique coauthors of "Claudio Gutiérrez" on journal articles per year:
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[:authorOf]->(a:Article)<-[:authorOf]-(co:Person)
+RETURN a.year, count(DISTINCT co)
+ORDER BY a.year;
+
+Return the unique names of all coauthors of "Claudio Gutiérrez" that have worked with him on at least two journal articles:
+MATCH (p:Person {name: "Claudio Gutiérrez"})-[:authorOf]->(a:Article)<-[:authorOf]-(co:Person)
+WITH co, count(a) AS collaborations
+WHERE collaborations >= 2
+RETURN DISTINCT co.name;
+
+Return a shortest undirected path from "Claudio Gutiérrez" to "Tim Berners-Lee":
+MATCH p = shortestPath((p1:Person {name: "Claudio Gutiérrez"})-[*]-(p2:Person {name: "Tim Berners-Lee"}))
+RETURN p;
+
+Return the shortest undirected path length from "Claudio Gutiérrez" to "Tim Berners-Lee":
+MATCH p = shortestPath((p1:Person {name: "Claudio Gutiérrez"})-[*]-(p2:Person {name: "Tim Berners-Lee"}))
+RETURN length(p);
+
+Return all undirected shortest paths from "Claudio Gutiérrez" to "Tim Berners-Lee":
+MATCH p = allShortestPaths((p1:Person {name: "Claudio Gutiérrez"})-[*]-(p2:Person {name: "Tim Berners-Lee"}))
+RETURN p;
+
+Find all paths of length between 2 and 4 (inclusive) from "Claudio Gutiérrez" to "Juan Alvarez":
+MATCH p = (p1:Person {name: "Claudio Gutiérrez"})-[*2..4]-(p2:Person {name: "Juan Alvarez"})
+RETURN p;
